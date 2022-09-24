@@ -50,8 +50,6 @@ The `colony` and `stressor` data were both collected by the United States Depart
 
 To answer the question, I will need information from the variables `year`, `months`, `state`, `stressor`, `stress_pct`, and `colony_lost_pct` variables. Only `year`, `stress_pct` and `colony_lost_pct` are numeric. The other variables `months`, `state`, and `stressor` are character variables. `year`, `months` and `state` are the observation ID variables, containing information on the year, quarter, and state from which the information was gathered. `stressor` is categorical, containing information on the pest type for the observation. `stress_pct` is a numerical variable associated with `stressor`, indicating the percentage of affected hives in the given `month`, `year`, and `state` of the observation. `colony_lost_pct` is numerical and reflects the percentage of lost colonies in the `month`, `year`, and `state` of the observation.
 
-#revisit me
-
 **Approach:** 
 
 To clean the data, I'll begin by using `spread()` and `left_join()` to merge the stressor data with the other colony information. This should result in a dataframe containing one observation for each state-year-season combination, with each observation containing information on the prevalence of all six colony collapse disorder contributors. I'll also use the `fill` option in `spread()` to convert the NA values to zeroes. 
@@ -212,18 +210,19 @@ bees_box <-
 #bar graph
   ggplot(
     ) +
-  geom_col(data = bees_bar, aes(months, bees_affected, fill = stressor)
+  geom_col(data = bees_bar, aes(stressor, bees_affected, fill = stressor)
     ) +
   labs(fill = "Stressor", 
        title = "Stressor proportion and colonies affected, by quarter"
        ) +
-  scale_x_discrete(name = "Quarter") + 
+  scale_x_discrete(name = "Stressor") + 
   scale_y_continuous(name = "Mean Affected Colonies",
                      labels = c("0", "1,000,000", "2,000,000", "3,000,000")) +
   scale_fill_discrete(labels = c("Diseases", "Other", "Other pests/parasites", "Pesticides", "Unknown", "Varroa mites")) +
   theme_minimal() +
   theme(axis.text.x = element_text(
-      angle = 15))
+      angle = 15)) + 
+  facet_wrap(vars(months))
 ```
 
 ```{r}
@@ -232,11 +231,10 @@ bees_box |>
   ggplot(
     aes(colony_lost_pct, reorder(months, colony_lost_pct, na.rm = TRUE), fill = months)
   ) +
-  geom_boxplot() +
+  geom_boxplot(show.legend = F) +
   scale_x_continuous(name = "Colony Losses",
                      label = scales::label_percent(accuracy = 1)) +
-  scale_y_discrete(name = "Quarter") + 
-  theme(legend.position = "none") +
+  scale_y_discrete(name = "Quarter") +
   labs(title = "Boxplots of state-level colony loss percentages, by quarter") + 
   theme_minimal()
 ```
